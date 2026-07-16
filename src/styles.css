@@ -140,7 +140,15 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
 .photo-section::before { content: ''; position: absolute; inset: 0; background-image: radial-gradient(circle at 10% 20%,rgba(255,255,255,.05) 1px,transparent 1px); background-size: 24px 24px; opacity: .6; }
 .section-heading.light { position: relative; }.section-heading.light > span { color: #e8c6bc; }.section-heading.light h2 { color: #fffaf4; }.section-heading.light p { color: #d9ddd3; }
 .photo-collage { max-width: 1050px; margin: auto; display: grid; grid-template-columns: 1.35fr 1fr 1fr; grid-template-rows: 180px 180px; gap: 14px; position: relative; }
-.photo-tile, .uploaﬂn-¢Gß≤⁄Óù∆≠yﬁsparent,rgba(50,40,35,.65)); display: flex; justify-content: space-between; align-items: end; }
+.photo-tile, .upload-tile { border-radius: 3px; overflow: hidden; position: relative; min-height: 150px; }
+.tile-large { grid-row: span 2; }
+.photo-illustration { position: absolute; inset: 0; display: grid; place-items: center; }
+.photo-illustration svg { width: 56px; height: 56px; opacity: .72; filter: drop-shadow(0 6px 12px rgba(55,40,36,.15)); }
+.tile-sunset .photo-illustration { color: #ae6b66; background: radial-gradient(circle at 62% 30%,#ffe6ab 0 9%,transparent 10%),linear-gradient(165deg,#ecc9b7 0 50%,#8b9a7d 51% 70%,#5f725f 71%); }
+.tile-coffee .photo-illustration { color: #865f4e; background: linear-gradient(135deg,#e9d3bd,#b79374); }
+.tile-flower .photo-illustration { color: #fff1df; background: linear-gradient(145deg,#aab99a,#6f886b); }
+.tile-kitchen .photo-illustration { color: #9e6152; background: linear-gradient(145deg,#eecba8,#cf9e75); }
+.photo-label { position: absolute; inset: auto 0 0; color: white; padding: 30px 16px 13px; background: linear-gradient(transparent,rgba(50,40,35,.65)); display: flex; justify-content: space-between; align-items: end; }
 .photo-label strong { font: 17px 'DM Serif Display','Noto Sans SC'; font-weight: 400; }.photo-label span { font-size: 9px; opacity: .78; }
 .upload-tile { border: 1px dashed rgba(255,255,255,.45); color: #edf0e8; background: rgba(255,255,255,.06); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; cursor: pointer; }
 .upload-tile:hover { background: rgba(255,255,255,.13); }
