@@ -61,6 +61,7 @@ function App() {
   const [query, setQuery] = useState('')
   const [toast, setToast] = useState('')
   const [menuId, setMenuId] = useState(null)
+  const [editingEntry, setEditingEntry] = useState(null)
   const [startModalOpen, setStartModalOpen] = useState(false)
   const [anniversaryModal, setAnniversaryModal] = useState(null)
   const [syncModalOpen, setSyncModalOpen] = useState(false)
@@ -215,10 +216,24 @@ function App() {
     return moodMatch && searchMatch
   }), [entries, activeFilter, query])
 
-  const addEntry = (entry) => {
-    setEntries(current => [entry, ...current])
+  const openNewEntry = () => {
+    setEditingEntry(null)
+    setModalOpen(true)
+  }
+
+  const openEditEntry = entry => {
+    setEditingEntry(entry)
+    setMenuId(null)
+    setModalOpen(true)
+  }
+
+  const saveEntry = entry => {
+    setEntries(current => editingEntry
+      ? current.map(item => item.id === entry.id ? entry : item)
+      : [entry, ...current])
     setModalOpen(false)
-    setToast('这一天，已经好好收藏啦')
+    setEditingEntry(null)
+    setToast(editingEntry ? '这件小事已经更新好啦' : '这一天，已经好好收藏啦')
     setTimeout(() => setToast(''), 2600)
     setTimeout(() => document.querySelector('#timeline')?.scrollIntoView({ behavior: 'smooth' }), 200)
   }
@@ -248,7 +263,7 @@ function App() {
   return (
     <div className="app-shell">
       <div className="paper-noise" />
-      <Header onAdd={() => setModalOpen(true)} onSync={() => setSyncModalOpen(true)} syncStatus={syncStatus} mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
+      <Header onAdd={openNewEntry} onSync={() => setSyncModalOpen(true)} syncStatus={syncStatus} mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
 
       <main>
         <section className="hero" id="home">
@@ -259,7 +274,7 @@ function App() {
             <h1>把平凡的日子<br /><em>过成喜欢的样子</em></h1>
             <p className="hero-subtitle">日子很长，值得我们慢慢写。<br />今天的心动，也别忘了好好收藏。</p>
             <div className="hero-actions">
-              <button className="primary-btn" onClick={() => setModalOpen(true)}><Edit3 size={17} /> 写下今天</button>
+              <button className="primary-btn" onClick={openNewEntry}><Edit3 size={17} /> 写下今天</button>
               <button className="text-btn" onClick={() => document.querySelector('#timeline').scrollIntoView({behavior:'smooth'})}>翻翻我们的故事 <ChevronDown size={16} /></button>
             </div>
           </div>
@@ -316,18 +331,21 @@ function App() {
                     <span className="mood-pill"><Heart size={12} fill="currentColor" /> {entry.mood}</span>
                     <div className="entry-menu-wrap">
                       <button className="icon-btn" aria-label="更多操作" onClick={() => setMenuId(menuId === entry.id ? null : entry.id)}><MoreHorizontal size={19} /></button>
-                      {menuId === entry.id && <button className="delete-pop" onClick={() => removeEntry(entry.id)}><Trash2 size={14} /> 删除记录</button>}
+                      {menuId === entry.id && <div className="entry-menu-panel">
+                        <button onClick={() => openEditEntry(entry)}><Edit3 size={14} /> 编辑小事和照片</button>
+                        <button className="danger" onClick={() => removeEntry(entry.id)}><Trash2 size={14} /> 删除整条记录</button>
+                      </div>}
                     </div>
                   </div>
                   <h3>{entry.title}</h3>
                   <p>{entry.text}</p>
-                  {entry.photos?.length > 0 && <div className="entry-photos">{entry.photos.map((src, i) => <img src={src} alt={`${entry.title} 照片 ${i+1}`} key={i} />)}</div>}
+                  {entry.photos?.length > 0 && <div className="entry-photos">{entry.photos.map((src, i) => <button type="button" className="entry-photo-button" title="编辑或删除照片" onClick={() => openEditEntry(entry)} key={i}><img src={src} alt={`${entry.title} 照片 ${i+1}`} /><span><Edit3 size={12} /> 管理照片</span></button>)}</div>}
                   <footer><span><MapPin size={14} />{entry.location || '和你在一起'}</span><Quote size={17} /></footer>
                 </div>
               </article>
             }) : <div className="empty-state"><Heart size={30} /><h3>还没找到这段回忆</h3><p>换个心情或关键词试试看吧。</p></div>}
           </div>
-          <button className="add-memory-dashed" onClick={() => setModalOpen(true)}><Plus size={20} /><span>再记下一件小事</span></button>
+          <button className="add-memory-dashed" onClick={openNewEntry}><Plus size={20} /><span>再记下一件小事</span></button>
         </section>
 
         <section className="photo-section" id="photos">
@@ -337,7 +355,7 @@ function App() {
             <PhotoTile className="tile-coffee" icon={Coffee} label="雨天咖啡" note="一起躲雨" />
             <PhotoTile className="tile-flower" icon={Sparkles} label="路边的花" note="你说很好看" />
             <PhotoTile className="tile-kitchen" icon={Utensils} label="今日晚餐" note="两人份快乐" />
-            <button className="upload-tile" onClick={() => setModalOpen(true)}><ImagePlus size={25} /><strong>添一张新照片</strong><span>把喜欢的瞬间放进来</span></button>
+            <button className="upload-tile" onClick={openNewEntry}><ImagePlus size={25} /><strong>添一张新照片</strong><span>把喜欢的瞬间放进来</span></button>
           </div>
         </section>
 
@@ -357,7 +375,7 @@ function App() {
         <span>{syncCode ? <Cloud size={13} /> : <LockKeyhole size={13} />} {syncCode ? '已使用情侣同步码加密同步' : '仅保存在你的浏览器中'}</span>
       </footer>
 
-      {modalOpen && <EntryModal onClose={() => setModalOpen(false)} onSave={addEntry} />}
+      {modalOpen && <EntryModal item={editingEntry} onClose={() => { setModalOpen(false); setEditingEntry(null) }} onSave={saveEntry} />}
       {startModalOpen && <StartDateModal value={relationshipStart} onClose={() => setStartModalOpen(false)} onSave={value => { setRelationshipStart(value); setStartModalOpen(false); setToast('在一起的日期设置好啦'); setTimeout(() => setToast(''), 2200) }} />}
       {anniversaryModal && <AnniversaryModal item={anniversaryModal} onClose={() => setAnniversaryModal(null)} onSave={saveAnniversary} />}
       {syncModalOpen && <SyncModal
@@ -523,13 +541,14 @@ function SyncModal({ configured, connectedCode, status, error, lastSyncedAt, onC
   </div>
 }
 
-function EntryModal({ onClose, onSave }) {
-  const [date, setDate] = useState(new Date().toISOString().slice(0,10))
-  const [title, setTitle] = useState('')
-  const [text, setText] = useState('')
-  const [location, setLocation] = useState('')
-  const [mood, setMood] = useState('幸福')
-  const [photos, setPhotos] = useState([])
+function EntryModal({ item, onClose, onSave }) {
+  const isEditing = Boolean(item?.id)
+  const [date, setDate] = useState(item?.date || new Date().toISOString().slice(0,10))
+  const [title, setTitle] = useState(item?.title || '')
+  const [text, setText] = useState(item?.text || '')
+  const [location, setLocation] = useState(item?.location || '')
+  const [mood, setMood] = useState(item?.mood || '幸福')
+  const [photos, setPhotos] = useState(item?.photos || [])
   const fileRef = useRef(null)
 
   const handlePhotos = async event => {
@@ -544,12 +563,25 @@ function EntryModal({ onClose, onSave }) {
     e.preventDefault()
     if (!title.trim() || !text.trim()) return
     const now = new Date()
-    onSave({ id: Date.now(), date, displayDate: prettyDate(date), time: now.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}), mood, icon: mood === '甜蜜' ? 'heart' : mood === '平静' ? 'coffee' : 'sparkle', title: title.trim(), text: text.trim(), location: location.trim(), color: ['peach','cream','sage'][entriesHash(title) % 3], photos })
+    onSave({
+      ...item,
+      id: item?.id || Date.now(),
+      date,
+      displayDate: prettyDate(date),
+      time: item?.time || now.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),
+      mood,
+      icon: mood === '甜蜜' ? 'heart' : mood === '平静' ? 'coffee' : 'sparkle',
+      title: title.trim(),
+      text: text.trim(),
+      location: location.trim(),
+      color: item?.color || ['peach','cream','sage'][entriesHash(title) % 3],
+      photos,
+    })
   }
   return <div className="modal-backdrop" onMouseDown={e => e.target === e.currentTarget && onClose()}>
     <form className="entry-modal" onSubmit={submit}>
       <button type="button" className="modal-close" onClick={onClose}><X size={20} /></button>
-      <div className="modal-heading"><span><Edit3 size={18} /></span><div><h2>写下今天</h2><p>把值得记住的小事，好好放在这里。</p></div></div>
+      <div className="modal-heading"><span><Edit3 size={18} /></span><div><h2>{isEditing ? '编辑这件小事' : '写下今天'}</h2><p>{isEditing ? '文字和照片都可以重新整理。' : '把值得记住的小事，好好放在这里。'}</p></div></div>
       <label>今天是什么日子？<input type="date" value={date} onChange={e => setDate(e.target.value)} /></label>
       <label>给这一天起个名字<input value={title} onChange={e => setTitle(e.target.value)} placeholder="例如：晚风里的散步" maxLength={32} required /></label>
       <label>今天发生了什么？<textarea value={text} onChange={e => setText(e.target.value)} placeholder="慢慢写，不着急……" rows={5} maxLength={400} required /><small>{text.length}/400</small></label>
@@ -559,12 +591,12 @@ function EntryModal({ onClose, onSave }) {
       </div>
       <label>放几张照片 <span className="optional">最多 3 张</span>
         <div className="photo-picker">
-          {photos.map((src,i) => <div className="photo-preview" key={i}><img src={src} alt="预览" /><button type="button" onClick={() => setPhotos(p => p.filter((_,j) => i !== j))}><X size={13} /></button></div>)}
+          {photos.map((src,i) => <div className="photo-preview" key={i}><img src={src} alt={`照片 ${i + 1}`} /><button type="button" aria-label={`删除第 ${i + 1} 张照片`} title="删除这张照片" onClick={() => setPhotos(p => p.filter((_,j) => i !== j))}><Trash2 size={13} /></button></div>)}
           {photos.length < 3 && <button type="button" className="pick-photo" onClick={() => fileRef.current.click()}><Camera size={20} /><span>添加照片</span></button>}
           <input ref={fileRef} hidden type="file" accept="image/*" multiple onChange={handlePhotos} />
         </div>
       </label>
-      <div className="modal-actions"><button type="button" className="cancel-btn" onClick={onClose}>晚点再写</button><button className="save-btn" type="submit"><Heart size={16} fill="currentColor" /> 收藏这一天</button></div>
+      <div className="modal-actions"><button type="button" className="cancel-btn" onClick={onClose}>取消</button><button className="save-btn" type="submit"><Heart size={16} fill="currentColor" /> {isEditing ? '保存修改' : '收藏这一天'}</button></div>
     </form>
   </div>
 }

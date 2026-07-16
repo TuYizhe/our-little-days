@@ -124,13 +124,19 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
 .mood-pill { font-size: 10px; color: var(--rose); background: #faeeea; padding: 5px 9px; border-radius: 999px; display: flex; gap: 5px; align-items: center; }
 .entry-menu-wrap { position: relative; }
 .icon-btn { border: 0; background: transparent; color: #b4a29b; cursor: pointer; padding: 3px; }
-.delete-pop { position: absolute; top: 26px; right: 0; z-index: 5; width: 108px; border: 1px solid #eadbd6; background: white; color: #ad5b5e; padding: 9px 10px; border-radius: 9px; box-shadow: 0 10px 30px rgba(70,45,40,.14); font-size: 11px; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.entry-menu-panel { position: absolute; top: 26px; right: 0; z-index: 5; width: 155px; border: 1px solid #eadbd6; background: white; padding: 5px; border-radius: 10px; box-shadow: 0 10px 30px rgba(70,45,40,.14); }
+.entry-menu-panel button { width: 100%; border: 0; background: transparent; color: #715f59; padding: 9px 8px; border-radius: 7px; font-size: 10px; display: flex; align-items: center; gap: 7px; cursor: pointer; text-align: left; }
+.entry-menu-panel button:hover { background: #faf0ed; color: var(--deep-rose); }
+.entry-menu-panel button.danger { color: #ad5b5e; }.entry-menu-panel button.danger:hover { background: #fceded; }
 .entry-card h3 { margin: 13px 0 8px; font: 400 22px 'DM Serif Display','Noto Sans SC'; color: #4e3f3a; }
 .entry-card > p { margin: 0; color: #7e6e68; line-height: 1.85; font-size: 13px; font-weight: 300; }
 .entry-card footer { border-top: 1px dashed #eadfd9; margin-top: 19px; padding-top: 13px; display: flex; justify-content: space-between; color: #ad9992; }
 .entry-card footer span { display: flex; gap: 5px; align-items: center; font-size: 10px; }
 .entry-photos { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-top: 16px; }
-.entry-photos img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 8px; }
+.entry-photo-button { position: relative; border: 0; background: none; padding: 0; border-radius: 8px; overflow: hidden; cursor: pointer; }
+.entry-photo-button img { display: block; width: 100%; aspect-ratio: 4/3; object-fit: cover; transition: .2s; }
+.entry-photo-button span { position: absolute; inset: auto 6px 6px auto; display: flex; align-items: center; gap: 4px; border-radius: 999px; padding: 5px 7px; background: rgba(54,43,40,.72); color: white; font-size: 8px; opacity: 0; transform: translateY(4px); transition: .2s; }
+.entry-photo-button:hover img { transform: scale(1.03); filter: brightness(.9); }.entry-photo-button:hover span, .entry-photo-button:focus-visible span { opacity: 1; transform: translateY(0); }
 .add-memory-dashed { width: calc(100% - 178px); max-width: 752px; margin: 6px 0 0 calc(50% - 287px); min-height: 70px; border: 1px dashed #d9c5bd; background: rgba(255,255,255,.32); border-radius: 14px; color: #a7867d; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; font-size: 11px; }
 .add-memory-dashed:hover { background: white; color: var(--rose); border-color: var(--rose); }
 .empty-state { text-align: center; padding: 70px 20px; color: #a98d85; }
@@ -204,7 +210,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
 .input-with-icon { position: relative; }.input-with-icon svg { position: absolute; top: 18px; left: 11px; color: #b99c94; z-index: 2; }.input-with-icon input { padding-left: 32px; }
 .photo-picker { display: flex; gap: 9px; margin-top: 8px; }
 .photo-preview, .pick-photo { width: 80px; height: 70px; border-radius: 8px; position: relative; overflow: hidden; }
-.photo-preview img { width: 100%; height: 100%; object-fit: cover; }.photo-preview button { position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; padding: 0; border: 0; border-radius: 50%; background: rgba(30,20,20,.65); color: white; display: grid; place-items: center; }
+.photo-preview img { width: 100%; height: 100%; object-fit: cover; }.photo-preview button { position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; padding: 0; border: 0; border-radius: 50%; background: rgba(128,54,55,.82); color: white; display: grid; place-items: center; cursor: pointer; box-shadow: 0 2px 8px rgba(35,20,20,.2); }
+.photo-preview button:hover { background: #a33f43; transform: scale(1.05); }
 .pick-photo { border: 1px dashed #d7bdb5; background: #fcf4f1; color: #ad7b73; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 9px; cursor: pointer; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 22px; border-top: 1px solid #eee2dc; padding-top: 20px; }
 .cancel-btn, .save-btn { padding: 11px 18px; border-radius: 999px; cursor: pointer; font-size: 11px; }.cancel-btn { border: 1px solid #e3d5cf; background: transparent; }.save-btn { border: 0; background: var(--rose); color: white; display: flex; align-items: center; gap: 6px; box-shadow: 0 8px 20px rgba(169,83,85,.2); }
@@ -250,6 +257,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
   .timeline-section, .anniversary-section, .photo-section { padding: 76px 18px; }.section-heading { margin-bottom: 34px; }.section-heading p { line-height: 1.7; }
   .timeline-toolbar { align-items: stretch; flex-direction: column; }.search-box input { width: 100%; }.filters { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 3px; }
   .memory-entry { grid-template-columns: 30px 1fr; }.timeline-date { grid-column: 2; text-align: left; padding: 0 0 8px; flex-direction: row; gap: 8px; align-items: center; }.timeline-rail { grid-column: 1; grid-row: 1 / span 2; }.timeline-dot { width: 27px; height: 27px; margin-top: 31px; }.timeline-dot svg { width: 14px; }.entry-card { grid-column: 2; padding: 21px 19px 16px; }.entry-card h3 { font-size: 20px; }.add-memory-dashed { width: calc(100% - 30px); margin-left: 30px; }
+  .entry-photo-button span { opacity: 1; transform: none; }
   .photo-collage { grid-template-columns: 1fr 1fr; grid-template-rows: 250px 145px 145px 120px; }.tile-large { grid-column: span 2; grid-row: auto; }.upload-tile { grid-column: span 2; }
   .anniversary-grid { grid-template-columns: 1fr; }.anniversary-card { min-height: 200px; }
   .anniversary-actions { margin-top: -18px; justify-content: center; }.anniversary-card-actions { opacity: 1; }
