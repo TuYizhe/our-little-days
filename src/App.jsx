@@ -64,6 +64,7 @@ function App() {
   const [editingEntry, setEditingEntry] = useState(null)
   const [startModalOpen, setStartModalOpen] = useState(false)
   const [anniversaryModal, setAnniversaryModal] = useState(null)
+  const [albumPhotoModal, setAlbumPhotoModal] = useState(null)
   const [syncModalOpen, setSyncModalOpen] = useState(false)
   const [syncCode, setSyncCode] = useState(() => typeof window === 'undefined' ? '' : (localStorage.getItem('little-days-sync-code') || ''))
   const [syncStatus, setSyncStatus] = useState('off')
@@ -82,12 +83,18 @@ function App() {
     try { return JSON.parse(localStorage.getItem('little-days-anniversaries')) || starterAnniversaries }
     catch { return starterAnniversaries }
   })
+  const [albumPhotos, setAlbumPhotos] = useState(() => {
+    if (typeof window === 'undefined') return []
+    try { return JSON.parse(localStorage.getItem('little-days-album-photos')) || [] }
+    catch { return [] }
+  })
 
   useEffect(() => localStorage.setItem('little-days-entries', JSON.stringify(entries)), [entries])
   useEffect(() => localStorage.setItem('little-days-start', relationshipStart), [relationshipStart])
   useEffect(() => localStorage.setItem('little-days-anniversaries', JSON.stringify(anniversaries)), [anniversaries])
+  useEffect(() => localStorage.setItem('little-days-album-photos', JSON.stringify(albumPhotos)), [albumPhotos])
 
-  const snapshot = useMemo(() => ({ entries, relationshipStart, anniversaries }), [entries, relationshipStart, anniversaries])
+  const snapshot = useMemo(() => ({ entries, relationshipStart, anniversaries, albumPhotos }), [entries, relationshipStart, anniversaries, albumPhotos])
   snapshotRef.current = snapshot
 
   const applyCloudSnapshot = remote => {
@@ -98,6 +105,7 @@ function App() {
     setEntries(remote.entries)
     setRelationshipStart(remote.relationshipStart)
     setAnniversaries(remote.anniversaries)
+    setAlbumPhotos(Array.isArray(remote.albumPhotos) ? remote.albumPhotos : [])
   }
 
   const connectCloud = async (code, { createIfMissing = true, quiet = false } = {}) => {
@@ -245,6 +253,22 @@ function App() {
     setTimeout(() => setToast(''), 2200)
   }
 
+  const saveAlbumPhoto = photo => {
+    setAlbumPhotos(current => photo.id
+      ? current.map(item => item.id === photo.id ? photo : item)
+      : [...current, { ...photo, id: Date.now() }])
+    setAlbumPhotoModal(null)
+    setToast(photo.id ? '相册照片已经更新' : '新照片已经放进相册啦')
+    setTimeout(() => setToast(''), 2400)
+  }
+
+  const removeAlbumPhoto = id => {
+    setAlbumPhotos(current => current.filter(item => item.id !== id))
+    setAlbumPhotoModal(null)
+    setToast('照片已经从相册中删除')
+    setTimeout(() => setToast(''), 2200)
+  }
+
   const saveAnniversary = item => {
     setAnniversaries(current => item.id
       ? current.map(existing => existing.id === item.id ? item : existing)
@@ -306,7 +330,7 @@ function App() {
           <span className="stat-divider" />
           <Stat icon={MessageCircleHeart} value={entries.length} label="心动记录" />
           <span className="stat-divider" />
-          <Stat icon={Images} value={entries.reduce((n,e) => n + (e.photos?.length || 0), 0)} label="珍藏照片" />
+          <Stat icon={Images} value={entries.reduce((n,e) => n + (e.photos?.length || 0), 0) + albumPhotos.length} label="珍藏照片" />
           <span className="stat-divider" />
           <Stat icon={PartyPopper} value={anniversaries.length} label="重要纪念日" />
         </section>
@@ -355,7 +379,8 @@ function App() {
             <PhotoTile className="tile-coffee" icon={Coffee} label="雨天咖啡" note="一起躲雨" />
             <PhotoTile className="tile-flower" icon={Sparkles} label="路边的花" note="你说很好看" />
             <PhotoTile className="tile-kitchen" icon={Utensils} label="今日晚餐" note="两人份快乐" />
-            <button className="upload-tile" onClick={openNewEntry}><ImagePlus size={25} /><strong>添一张新照片</strong><span>把喜欢的瞬间放进来</span></button>
+            {albumPhotos.map(photo => <AlbumPhotoTile key={photo.id} photo={photo} onEdit={() => setAlbumPhotoModal(photo)} onDelete={() => removeAlbumPhoto(photo.id)} />)}
+            <button className="upload-tile" onClick={() => setAlbumPhotoModal({})}><ImagePlus size={25} /><strong>添一张新照片</strong><span>把喜欢的瞬间放进来</span></button>
           </div>
         </section>
 
@@ -378,6 +403,7 @@ function App() {
       {modalOpen && <EntryModal item={editingEntry} onClose={() => { setModalOpen(false); setEditingEntry(null) }} onSave={saveEntry} />}
       {startModalOpen && <StartDateModal value={relationshipStart} onClose={() => setStartModalOpen(false)} onSave={value => { setRelationshipStart(value); setStartModalOpen(false); setToast('在一起的日期设置好啦'); setTimeout(() => setToast(''), 2200) }} />}
       {anniversaryModal && <AnniversaryModal item={anniversaryModal} onClose={() => setAnniversaryModal(null)} onSave={saveAnniversary} />}
+      {albumPhotoModal && <AlbumPhotoModal item={albumPhotoModal} onClose={() => setAlbumPhotoModal(null)} onSave={saveAlbumPhoto} onDelete={removeAlbumPhoto} />}
       {syncModalOpen && <SyncModal
         configured={isCloudConfigured()}
         connectedCode={syncCode}
@@ -423,6 +449,18 @@ function PhotoTile({ className, icon: Icon, label, note }) {
   return <div className={`photo-tile ${className}`}><div className="photo-illustration"><Icon /></div><div className="photo-label"><strong>{label}</strong><span>{note}</span></div></div>
 }
 
+function AlbumPhotoTile({ photo, onEdit, onDelete }) {
+  return <div className="photo-tile album-photo-tile">
+    <img src={photo.src} alt={photo.title} />
+    <button type="button" className="album-photo-open" onClick={onEdit} aria-label={`编辑照片：${photo.title}`} />
+    <div className="photo-label"><strong>{photo.title}</strong><span>{photo.note || '我们的瞬间'}</span></div>
+    <div className="album-photo-actions">
+      <button type="button" onClick={onEdit} title="编辑或替换照片"><Edit3 size={14} /><span>编辑</span></button>
+      <button type="button" className="danger" onClick={onDelete} title="删除照片"><Trash2 size={14} /><span>删除</span></button>
+    </div>
+  </div>
+}
+
 function Anniversary({ item, onEdit, onDelete }) {
   const Icon = item.icon === 'party' ? PartyPopper : item.icon === 'calendar' ? CalendarDays : Heart
   const month = item.date.slice(5).replace('-', '.')
@@ -466,6 +504,61 @@ function AnniversaryModal({ item, onClose, onSave }) {
         <label>颜色<div className="option-selector color-options">{['rose','gold','sage'].map(key => <button type="button" aria-label={key} key={key} className={`${key} ${color === key ? 'selected' : ''}`} onClick={() => setColor(key)} />)}</div></label>
       </div>
       <div className="modal-actions"><button type="button" className="cancel-btn" onClick={onClose}>取消</button><button className="save-btn" type="submit"><Heart size={16} fill="currentColor" /> {item.id ? '保存修改' : '添加纪念日'}</button></div>
+    </form>
+  </div>
+}
+
+function AlbumPhotoModal({ item, onClose, onSave, onDelete }) {
+  const isEditing = Boolean(item.id)
+  const [title, setTitle] = useState(item.title || '')
+  const [note, setNote] = useState(item.note || '')
+  const [src, setSrc] = useState(item.src || '')
+  const [processing, setProcessing] = useState(false)
+  const [photoError, setPhotoError] = useState('')
+  const fileRef = useRef(null)
+
+  const choosePhoto = async event => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    setProcessing(true)
+    setPhotoError('')
+    try {
+      setSrc(await compressPhoto(file))
+    } catch {
+      setPhotoError('这张照片读取失败，请换一张试试')
+    } finally {
+      setProcessing(false)
+      event.target.value = ''
+    }
+  }
+
+  const submit = event => {
+    event.preventDefault()
+    if (!src || !title.trim()) return
+    onSave({ ...item, title: title.trim(), note: note.trim(), src })
+  }
+
+  return <div className="modal-backdrop" onMouseDown={event => event.target === event.currentTarget && onClose()}>
+    <form className="entry-modal compact-modal album-photo-modal" onSubmit={submit}>
+      <button type="button" className="modal-close" onClick={onClose}><X size={20} /></button>
+      <div className="modal-heading"><span><Images size={18} /></span><div><h2>{isEditing ? '编辑相册照片' : '添加相册照片'}</h2><p>可以修改说明，也可以重新选择一张图片。</p></div></div>
+
+      {src ? <div className="album-editor-preview">
+        <img src={src} alt="相册预览" />
+        <button type="button" onClick={() => fileRef.current.click()}><Camera size={15} /> {processing ? '处理中…' : '更换照片'}</button>
+      </div> : <button type="button" className="album-photo-picker" onClick={() => fileRef.current.click()} disabled={processing}>
+        <ImagePlus size={28} /><strong>{processing ? '正在处理照片…' : '选择一张照片'}</strong><span>图片会自动压缩后保存</span>
+      </button>}
+      <input ref={fileRef} hidden type="file" accept="image/*" onChange={choosePhoto} />
+      {photoError && <p className="photo-upload-error">{photoError}</p>}
+
+      <label>照片标题<input value={title} onChange={event => setTitle(event.target.value)} placeholder="例如：海边的傍晚" maxLength={24} required /></label>
+      <label>一句小备注<input value={note} onChange={event => setNote(event.target.value)} placeholder="例如：风也很温柔" maxLength={30} /></label>
+
+      <div className="modal-actions album-modal-actions">
+        {isEditing ? <button type="button" className="delete-album-photo-btn" onClick={() => onDelete(item.id)}><Trash2 size={14} /> 删除照片</button> : <span />}
+        <div><button type="button" className="cancel-btn" onClick={onClose}>取消</button><button className="save-btn" type="submit" disabled={!src || !title.trim() || processing}><Heart size={16} fill="currentColor" /> {isEditing ? '保存修改' : '放进相册'}</button></div>
+      </div>
     </form>
   </div>
 }

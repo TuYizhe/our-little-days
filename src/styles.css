@@ -145,7 +145,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
 .photo-section { padding: 100px clamp(24px,8vw,130px) 110px; background: #6e7568; position: relative; }
 .photo-section::before { content: ''; position: absolute; inset: 0; background-image: radial-gradient(circle at 10% 20%,rgba(255,255,255,.05) 1px,transparent 1px); background-size: 24px 24px; opacity: .6; }
 .section-heading.light { position: relative; }.section-heading.light > span { color: #e8c6bc; }.section-heading.light h2 { color: #fffaf4; }.section-heading.light p { color: #d9ddd3; }
-.photo-collage { max-width: 1050px; margin: auto; display: grid; grid-template-columns: 1.35fr 1fr 1fr; grid-template-rows: 180px 180px; gap: 14px; position: relative; }
+.photo-collage { max-width: 1050px; margin: auto; display: grid; grid-template-columns: 1.35fr 1fr 1fr; grid-template-rows: 180px 180px; grid-auto-rows: 180px; gap: 14px; position: relative; }
 .photo-tile, .upload-tile { border-radius: 3px; overflow: hidden; position: relative; min-height: 150px; }
 .tile-large { grid-row: span 2; }
 .photo-illustration { position: absolute; inset: 0; display: grid; place-items: center; }
@@ -159,6 +159,13 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
 .upload-tile { border: 1px dashed rgba(255,255,255,.45); color: #edf0e8; background: rgba(255,255,255,.06); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; cursor: pointer; }
 .upload-tile:hover { background: rgba(255,255,255,.13); }
 .upload-tile strong { font-size: 12px; }.upload-tile span { font-size: 9px; opacity: .7; }
+.album-photo-tile > img { width: 100%; height: 100%; object-fit: cover; transition: .25s; }
+.album-photo-tile:hover > img { transform: scale(1.03); filter: brightness(.92); }
+.album-photo-open { position: absolute; inset: 0; z-index: 1; border: 0; background: transparent; cursor: pointer; }
+.album-photo-tile .photo-label { z-index: 2; pointer-events: none; }
+.album-photo-actions { position: absolute; z-index: 3; top: 9px; right: 9px; display: flex; gap: 5px; }
+.album-photo-actions button { border: 1px solid rgba(255,255,255,.45); background: rgba(53,45,41,.7); color: white; border-radius: 999px; padding: 7px 9px; display: flex; align-items: center; gap: 4px; font-size: 8px; cursor: pointer; backdrop-filter: blur(7px); }
+.album-photo-actions button:hover { background: var(--rose); }.album-photo-actions button.danger:hover { background: #9e3f44; }
 
 .anniversary-section { background: #f8eee8; }
 .anniversary-grid { max-width: 1000px; margin: auto; display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; }
@@ -213,9 +220,18 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
 .photo-preview img { width: 100%; height: 100%; object-fit: cover; }.photo-preview button { position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; padding: 0; border: 0; border-radius: 50%; background: rgba(128,54,55,.82); color: white; display: grid; place-items: center; cursor: pointer; box-shadow: 0 2px 8px rgba(35,20,20,.2); }
 .photo-preview button:hover { background: #a33f43; transform: scale(1.05); }
 .pick-photo { border: 1px dashed #d7bdb5; background: #fcf4f1; color: #ad7b73; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 9px; cursor: pointer; }
+.album-editor-preview { height: 230px; border-radius: 14px; overflow: hidden; position: relative; margin-bottom: 18px; background: #eee3dc; }
+.album-editor-preview img { width: 100%; height: 100%; object-fit: cover; }
+.album-editor-preview button { position: absolute; right: 12px; bottom: 12px; border: 1px solid rgba(255,255,255,.5); background: rgba(54,43,40,.72); color: white; border-radius: 999px; padding: 9px 12px; display: flex; align-items: center; gap: 6px; font-size: 9px; cursor: pointer; backdrop-filter: blur(8px); }
+.album-photo-picker { width: 100%; min-height: 190px; border: 1px dashed #d3b6ae; background: #fcf2ee; color: #a7776f; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; margin-bottom: 18px; cursor: pointer; }
+.album-photo-picker strong { font-size: 12px; }.album-photo-picker span { color: #ac9690; font-size: 9px; }.album-photo-picker:disabled { opacity: .55; cursor: wait; }
+.photo-upload-error { margin: -8px 0 14px; padding: 8px 10px; border-radius: 8px; color: #a6494d; background: #fbe9e9; font-size: 10px; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 22px; border-top: 1px solid #eee2dc; padding-top: 20px; }
 .cancel-btn, .save-btn { padding: 11px 18px; border-radius: 999px; cursor: pointer; font-size: 11px; }.cancel-btn { border: 1px solid #e3d5cf; background: transparent; }.save-btn { border: 0; background: var(--rose); color: white; display: flex; align-items: center; gap: 6px; box-shadow: 0 8px 20px rgba(169,83,85,.2); }
 .save-btn:disabled, .sync-code-input button:disabled { opacity: .48; cursor: not-allowed; box-shadow: none; }
+.album-modal-actions { justify-content: space-between; align-items: center; }
+.album-modal-actions > div { display: flex; gap: 9px; }.album-modal-actions > span { width: 1px; }
+.delete-album-photo-btn { border: 0; background: transparent; color: #a64e52; padding: 9px 2px; display: flex; align-items: center; gap: 5px; font-size: 10px; cursor: pointer; }
 .sync-modal { width: min(100%, 560px); }
 .sync-setup-notice, .sync-explainer { display: flex; align-items: flex-start; gap: 11px; border-radius: 13px; padding: 14px; }
 .sync-setup-notice { background: #fff1e7; border: 1px solid #edd2bf; color: #a46848; }
@@ -247,7 +263,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
   .hero { grid-template-columns: 1fr; text-align: center; padding-top: 125px; gap: 55px; }.hero-copy { margin: auto; }.eyebrow,.hero-actions { justify-content: center; }.hero-keepsake { width: 390px; }.today-card { display: none; }
   .memory-strip { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }.stat-divider { display: none; }.stat { justify-content: center; }
   .timeline-section, .anniversary-section { padding-left: 30px; padding-right: 30px; }
-  .photo-collage { grid-template-columns: 1fr 1fr; grid-template-rows: 220px 160px 160px; }.tile-large { grid-row: span 2; }.upload-tile { grid-column: span 2; }
+  .photo-collage { grid-template-columns: 1fr 1fr; grid-template-rows: 220px 160px 160px; grid-auto-rows: 160px; }.tile-large { grid-row: span 2; }.upload-tile { grid-column: span 2; }
 }
 
 @media (max-width: 620px) {
@@ -258,7 +274,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
   .timeline-toolbar { align-items: stretch; flex-direction: column; }.search-box input { width: 100%; }.filters { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 3px; }
   .memory-entry { grid-template-columns: 30px 1fr; }.timeline-date { grid-column: 2; text-align: left; padding: 0 0 8px; flex-direction: row; gap: 8px; align-items: center; }.timeline-rail { grid-column: 1; grid-row: 1 / span 2; }.timeline-dot { width: 27px; height: 27px; margin-top: 31px; }.timeline-dot svg { width: 14px; }.entry-card { grid-column: 2; padding: 21px 19px 16px; }.entry-card h3 { font-size: 20px; }.add-memory-dashed { width: calc(100% - 30px); margin-left: 30px; }
   .entry-photo-button span { opacity: 1; transform: none; }
-  .photo-collage { grid-template-columns: 1fr 1fr; grid-template-rows: 250px 145px 145px 120px; }.tile-large { grid-column: span 2; grid-row: auto; }.upload-tile { grid-column: span 2; }
+  .photo-collage { grid-template-columns: 1fr 1fr; grid-template-rows: 250px 145px 145px 120px; grid-auto-rows: 145px; }.tile-large { grid-column: span 2; grid-row: auto; }.upload-tile { grid-column: span 2; }
+  .album-photo-actions button span { display: none; }.album-photo-actions button { padding: 8px; }.album-editor-preview { height: 190px; }.album-photo-modal .modal-actions { position: static; }.album-modal-actions { align-items: stretch; flex-direction: column-reverse; }.delete-album-photo-btn { justify-content: center; }.album-modal-actions > div { justify-content: flex-end; }
   .anniversary-grid { grid-template-columns: 1fr; }.anniversary-card { min-height: 200px; }
   .anniversary-actions { margin-top: -18px; justify-content: center; }.anniversary-card-actions { opacity: 1; }
   .entry-modal { padding: 24px 18px; border-radius: 17px; }.modal-heading { padding-right: 35px; }.form-row { grid-template-columns: 1fr; gap: 0; }.mood-selector button { padding: 7px 9px; }.modal-actions { position: sticky; bottom: -24px; background: #fffaf6; padding-bottom: 4px; }
